@@ -1,21 +1,22 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: db
   labels:
     app: db
 spec:
+  serviceName: db
   replicas: 1
   selector:
-    matchLables:
+    matchLabels:
      app: db
   template:
    metadata: 
      labels: 
       app: db
-  spec:
-    conatainers:
-      - iamge: postgres:15-alpine
+   spec:
+    containers:
+      - image: postgres:15-alpine
         name: postgres
         env: 
          - name: POSTGRES_USER
@@ -31,11 +32,17 @@ spec:
         ports:
          - containerPort: 5432
            name: postgres
-        volumeMount:
-         - mountPath: /var/lib/postgressql/data
+        volumeMounts:
+         - mountPath: /var/lib/postgresql/data
            name: db-data
-        volumes:
-         - name: db-data
-           emptyDir: {}
+
+    volumesChainTemaplates:
+      - metadata: 
+         name: db-data
+        spec:
+          acessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+             storage: 1Gi
            
   
